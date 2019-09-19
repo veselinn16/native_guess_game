@@ -31,6 +31,24 @@ const GameScreen = ({ userChoice, onGameOver }) => {
   const initialGuess = generateNumber(1, 100, userChoice);
   const [guess, setGuess] = useState(initialGuess);
   const [pastGuesses, setPastGuesses] = useState([initialGuess]);
+  const [deviceWidth, setdeviceWidth] = useState(
+    Dimensions.get("window").width
+  );
+  const [deviceHeight, setdeviceHeight] = useState(
+    Dimensions.get("window").height
+  );
+
+  useEffect(() => {
+    const updateLayout = () => {
+      setdeviceWidth(Dimensions.get("window").width);
+      setdeviceHeight(Dimensions.get("window").height);
+    };
+    Dimensions.addEventListener("change", updateLayout);
+
+    return () => {
+      Dimensions.removeEventListener("change", updateLayout);
+    };
+  });
 
   useEffect(() => {
     if (guess === userChoice) {
@@ -68,6 +86,37 @@ const GameScreen = ({ userChoice, onGameOver }) => {
     setPastGuesses(prevGuesses => [nextGuess, ...prevGuesses]);
   };
 
+  if (deviceHeight < 500) {
+    return (
+      <View style={styles.screen}>
+        <TitleText>Phone's guess</TitleText>
+        <View style={styles.controls}>
+          <MainButton onPress={triggerGuess.bind(this, "lower")}>
+            <Octicons
+              name="arrow-down"
+              size={Dimensions.get("window").height > 600 ? 30 : 20}
+              color="#fff"
+            />
+          </MainButton>
+          <NumberContainer>{guess}</NumberContainer>
+          <MainButton onPress={triggerGuess.bind(this, "greater")}>
+            <Octicons
+              name="arrow-up"
+              size={Dimensions.get("window").height > 600 ? 30 : 15}
+              color="#fff"
+            />
+          </MainButton>
+        </View>
+        <View style={styles.listContainer}>
+          <ScrollView contentContainerStyle={styles.list}>
+            {pastGuesses.map((guess, i) =>
+              renderListItem(guess, pastGuesses.length - i)
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    );
+  }
   return (
     <View style={styles.screen}>
       <TitleText>Phone's guess</TitleText>
@@ -130,6 +179,12 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     width: "60%",
     backgroundColor: "#fff"
+  },
+  controls: {
+    width: "80%",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-around"
   }
 });
 
